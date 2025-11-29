@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import emailjs from '@emailjs/browser';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,31 +30,49 @@ const Form = () => {
     }
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create email content
-    const emailBody = `
-New Form Submission:
+    try {
+      // Replace these with your EmailJS credentials
+      const serviceId = 'YOUR_SERVICE_ID';
+      const templateId = 'YOUR_TEMPLATE_ID';
+      const publicKey = 'YOUR_PUBLIC_KEY';
+      
+      const templateParams = {
+        to_email: 'marco.tarantino.bg@gmail.com',
+        from_name: formData.fullName,
+        from_email: formData.email,
+        phone: formData.phone,
+        category: formData.category,
+        message: formData.message,
+        newsletter: formData.newsletter ? "Yes" : "No",
+      };
 
-Full Name: ${formData.fullName}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Category: ${formData.category}
-Message: ${formData.message}
-Newsletter Subscription: ${formData.newsletter ? "Yes" : "No"}
-    `.trim();
-
-    // Create mailto link
-    const mailtoLink = `mailto:marco.tarantino.bg@gmail.com?subject=New Form Submission&body=${encodeURIComponent(emailBody)}`;
-    
-    // Open email client
-    window.location.href = mailtoLink;
-    
-    toast({
-      title: "Form Submitted",
-      description: "Your email client will open to send the form data.",
-    });
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      
+      toast({
+        title: "Form Submitted Successfully",
+        description: "Your form has been sent via email.",
+      });
+      
+      // Reset form
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        category: "",
+        message: "",
+        newsletter: false,
+      });
+    } catch (error) {
+      console.error('EmailJS Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send form. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLogout = () => {
