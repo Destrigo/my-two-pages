@@ -36,7 +36,7 @@ const Form = () => {
       const publicKey = 'Sh8iwu-lvTx6-nLOQ';
       
       const templateParams = {
-        to_email: 'marco.tarantino.bg@gmail.com',
+        to_email: 'ordini@hebenoageskin.it',
         from_name: formData.fullName,
         category: formData.category,
         message: formData.message,
