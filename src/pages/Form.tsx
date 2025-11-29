@@ -34,10 +34,9 @@ const Form = () => {
     e.preventDefault();
     
     try {
-      // Replace these with your EmailJS credentials
-      const serviceId = 'YOUR_SERVICE_ID';
-      const templateId = 'YOUR_TEMPLATE_ID';
-      const publicKey = 'YOUR_PUBLIC_KEY';
+      const serviceId = 'service_42azew6';
+      const templateId = 'template_usxk8pp';
+      const publicKey = 'Sh8iwu-lvTx6-nLOQ';
       
       const templateParams = {
         to_email: 'marco.tarantino.bg@gmail.com',
