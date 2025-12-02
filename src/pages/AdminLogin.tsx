@@ -6,14 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
-interface Agent {
-  id: string;
-  fullName: string;
-  password: string;
-}
+const ADMIN_EMAIL = "admin@hebe.it";
+const ADMIN_PASSWORD = "HeBeAdmin2024!";
 
-const Login = () => {
-  const [fullName, setFullName] = useState("");
+const AdminLogin = () => {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -21,25 +18,17 @@ const Login = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const storedAgents = localStorage.getItem("agents");
-    const agents: Agent[] = storedAgents ? JSON.parse(storedAgents) : [];
-    
-    const agent = agents.find(
-      a => a.fullName.toLowerCase() === fullName.toLowerCase() && a.password === password
-    );
-    
-    if (agent) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("agentName", agent.fullName);
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      localStorage.setItem("isAdmin", "true");
       toast({
-        title: "Accesso effettuato",
-        description: `Bentornato, ${agent.fullName}!`,
+        title: "Accesso Admin",
+        description: "Bentornato amministratore!",
       });
-      navigate("/form");
+      navigate("/admin");
     } else {
       toast({
         title: "Errore",
-        description: "Nome o password non validi",
+        description: "Credenziali admin non valide",
         variant: "destructive",
       });
     }
@@ -53,25 +42,25 @@ const Login = () => {
             He'Be
           </h1>
           <p className="font-cormorant text-xl italic text-muted-foreground animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            No Age Skin
+            Area Amministratore
           </p>
         </div>
         
         <Card className="shadow-lg border-border/50 backdrop-blur-sm bg-card/95 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-cormorant font-medium">Benvenuto</CardTitle>
-            <CardDescription className="font-cormorant">Inserisci le tue credenziali per continuare</CardDescription>
+            <CardTitle className="text-2xl font-cormorant font-medium">Accesso Admin</CardTitle>
+            <CardDescription className="font-cormorant">Inserisci le credenziali amministratore</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="font-cormorant">Nome Completo</Label>
+                <Label htmlFor="email" className="font-cormorant">Email Admin</Label>
                 <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Mario Rossi"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="admin@hebe.it"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   className="font-cormorant"
                 />
@@ -89,12 +78,12 @@ const Login = () => {
                 />
               </div>
               <Button type="submit" className="w-full font-cormorant text-base">
-                Accedi
+                Accedi come Admin
               </Button>
             </form>
             <div className="mt-4 text-center">
-              <Button variant="link" onClick={() => navigate("/admin-login")} className="font-cormorant text-muted-foreground text-sm">
-                Accesso Amministratore
+              <Button variant="link" onClick={() => navigate("/")} className="font-cormorant text-muted-foreground">
+                Torna al login agente
               </Button>
             </div>
           </CardContent>
@@ -104,4 +93,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;
