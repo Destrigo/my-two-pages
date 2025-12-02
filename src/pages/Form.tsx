@@ -20,6 +20,23 @@ interface CampioniItem {
   pieces: string;
 }
 
+interface ProductItem {
+  enabled: boolean;
+  quantity: string;
+  discount: string;
+  omaggio: string;
+}
+
+interface ProductInfo {
+  name: string;
+  price: number;
+}
+
+const PRODUCTS: Record<string, ProductInfo> = {
+  prodotto1: { name: "Crema Viso Idratante", price: 45.00 },
+  prodotto2: { name: "Siero Anti-Age", price: 68.00 },
+};
+
 const Form = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -56,6 +73,11 @@ const Form = () => {
     botoxLikeSerum: { enabled: false, pieces: "" },
     restoringCream: { enabled: false, pieces: "" },
     legsRelief: { enabled: false, pieces: "" },
+  });
+
+  const [products, setProducts] = useState<Record<string, ProductItem>>({
+    prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto2: { enabled: false, quantity: "", discount: "", omaggio: "" },
   });
 
   useEffect(() => {
@@ -119,6 +141,17 @@ const Form = () => {
         })
         .join(", ");
 
+      // Build products string
+      const productsList = Object.entries(products)
+        .filter(([_, item]) => item.enabled && item.quantity)
+        .map(([key, item]) => {
+          const product = PRODUCTS[key];
+          const discount = item.discount ? parseInt(item.discount) : 0;
+          const omaggio = item.omaggio || "0";
+          return `${product.name}: ${item.quantity} pz x €${product.price.toFixed(2)} (Sconto: ${discount}%, Omaggio: ${omaggio} pz)`;
+        })
+        .join("\n");
+
       // Build nuovo cliente info
       let nuovoClienteInfo = "";
       if (formData.isNuovoCliente) {
@@ -139,6 +172,9 @@ RAGIONE SOCIALE CLIENTE: ${formData.ragioneSociale}
 ${formData.isNuovoCliente ? "NUOVO CLIENTE: Sì" : "NUOVO CLIENTE: No"}
 
 ${nuovoClienteInfo}
+
+${productsList ? `INFORMAZIONI ORDINE:
+${productsList}` : ""}
 
 ${espositoriList ? `ESPOSITORI: ${espositoriList}` : ""}
 ${campioniList ? `CAMPIONI: ${campioniList}` : ""}
@@ -189,6 +225,10 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
         restoringCream: { enabled: false, pieces: "" },
         legsRelief: { enabled: false, pieces: "" },
       });
+      setProducts({
+        prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto2: { enabled: false, quantity: "", discount: "", omaggio: "" },
+      });
     } catch (error) {
       console.error('EmailJS Error:', error);
       toast({
@@ -216,6 +256,19 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
     setCampioni(prev => ({
       ...prev,
       [key]: { ...prev[key], enabled: !prev[key].enabled, pieces: !prev[key].enabled ? prev[key].pieces : "" }
+    }));
+  };
+
+  const toggleProduct = (key: string) => {
+    setProducts(prev => ({
+      ...prev,
+      [key]: { 
+        ...prev[key], 
+        enabled: !prev[key].enabled, 
+        quantity: !prev[key].enabled ? prev[key].quantity : "",
+        discount: !prev[key].enabled ? prev[key].discount : "",
+        omaggio: !prev[key].enabled ? prev[key].omaggio : ""
+      }
     }));
   };
 
@@ -386,6 +439,82 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                   </div>
                 </div>
               )}
+
+              <Separator />
+
+              {/* Informazioni Riferite all'Ordine Section */}
+              <div className="space-y-4">
+                <Label className="font-cormorant font-semibold text-lg">INFORMAZIONI RIFERITE ALL'ORDINE</Label>
+                <div className="space-y-4">
+                  {Object.entries(PRODUCTS).map(([key, product]) => (
+                    <div key={key} className="p-3 rounded-lg border bg-muted/20">
+                      <div className="flex items-center gap-4 mb-2">
+                        <Checkbox
+                          id={`prod-${key}`}
+                          checked={products[key].enabled}
+                          onCheckedChange={() => toggleProduct(key)}
+                        />
+                        <Label htmlFor={`prod-${key}`} className="font-cormorant cursor-pointer flex-1">
+                          {product.name}
+                        </Label>
+                        <span className="font-cormorant font-semibold text-primary">
+                          €{product.price.toFixed(2)}
+                        </span>
+                      </div>
+                      {products[key].enabled && (
+                        <div className="grid grid-cols-3 gap-3 mt-3">
+                          <div className="space-y-1">
+                            <Label className="font-cormorant text-xs">Quantità (pz)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={products[key].quantity}
+                              onChange={(e) => setProducts(prev => ({
+                                ...prev,
+                                [key]: { ...prev[key], quantity: e.target.value }
+                              }))}
+                              className="font-cormorant"
+                              min="1"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="font-cormorant text-xs">Sconto (%)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={products[key].discount}
+                              onChange={(e) => {
+                                const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                setProducts(prev => ({
+                                  ...prev,
+                                  [key]: { ...prev[key], discount: e.target.value === "" ? "" : val.toString() }
+                                }));
+                              }}
+                              className="font-cormorant"
+                              min="0"
+                              max="100"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="font-cormorant text-xs">Omaggio (pz)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={products[key].omaggio}
+                              onChange={(e) => setProducts(prev => ({
+                                ...prev,
+                                [key]: { ...prev[key], omaggio: e.target.value }
+                              }))}
+                              className="font-cormorant"
+                              min="0"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               <Separator />
 
