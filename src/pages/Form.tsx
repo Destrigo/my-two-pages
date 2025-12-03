@@ -33,8 +33,18 @@ interface ProductInfo {
 }
 
 const PRODUCTS: Record<string, ProductInfo> = {
-  prodotto1: { name: "Crema Viso Idratante", price: 45.0 },
-  prodotto2: { name: "Siero Anti-Age", price: 68.0 },
+  prodotto1: { name: "Water Bank", price: 19.5 },
+  prodotto2: { name: "Essential", price: 28.0 },
+  prodotto3: { name: "Age Alchemy", price: 36.5 },
+  prodotto4: { name: "Skin Heart", price: 39.0 },
+  prodotto5: { name: "The Hero", price: 44.5 },
+  prodotto6: { name: "Pure Skin", price: 20.0 },
+  prodotto7: { name: "Radiance Renew", price: 18.0 },
+  prodotto8: { name: "Eye Rescue", price: 22.5 },
+  prodotto9: { name: "Sun Kiss", price: 25.0 },
+  prodotto10: { name: "Leg Relief", price: 19.0 },
+  prodotto11: { name: "Powerful Milk", price: 18.0 },
+  prodotto12: { name: "Balance Myst", price: 16.0 },
 };
 
 const Form = () => {
@@ -60,7 +70,7 @@ const Form = () => {
   });
 
   const [espositori, setEspositori] = useState<Record<string, EspositoreItem>>({
-    skinimalis: { enabled: false, pieces: "" },
+    skinimalism: { enabled: false, pieces: "" },
     sensitive: { enabled: false, pieces: "" },
     sunPassion: { enabled: false, pieces: "" },
     careYouBody: { enabled: false, pieces: "" },
@@ -78,6 +88,16 @@ const Form = () => {
   const [products, setProducts] = useState<Record<string, ProductItem>>({
     prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
     prodotto2: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto3: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto4: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto5: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto6: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto7: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto8: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto9: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto10: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto11: { enabled: false, quantity: "", discount: "", omaggio: "" },
+    prodotto12: { enabled: false, quantity: "", discount: "", omaggio: "" },
   });
 
   useEffect(() => {
@@ -116,7 +136,7 @@ const Form = () => {
         .filter(([_, item]) => item.enabled && item.pieces)
         .map(([key, item]) => {
           const names: Record<string, string> = {
-            skinimalis: "SKINIMALIS",
+            skinimalism: "SKINIMALISM",
             sensitive: "SENSITIVE",
             sunPassion: "SUN PASSION",
             careYouBody: "CAREyouBODY",
@@ -216,7 +236,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
         note: "",
       });
       setEspositori({
-        skinimalis: { enabled: false, pieces: "" },
+        skinimalism: { enabled: false, pieces: "" },
         sensitive: { enabled: false, pieces: "" },
         sunPassion: { enabled: false, pieces: "" },
         careYouBody: { enabled: false, pieces: "" },
@@ -231,7 +251,18 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
       });
       setProducts({
         prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
         prodotto2: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto3: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto4: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto5: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto6: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto7: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto8: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto9: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto10: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto11: { enabled: false, quantity: "", discount: "", omaggio: "" },
+        prodotto12: { enabled: false, quantity: "", discount: "", omaggio: "" },
       });
     } catch (error) {
       console.error("EmailJS Error:", error);
@@ -277,7 +308,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
   };
 
   const espositoreLabels: Record<string, string> = {
-    skinimalis: "SKINIMALIS",
+    skinimalism: "SKINIMALISM",
     sensitive: "SENSITIVE",
     sunPassion: "SUN PASSION",
     careYouBody: "CAREyouBODY",
