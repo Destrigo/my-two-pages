@@ -23,7 +23,6 @@ const Admin = () => {
       navigate("/admin-login");
       return;
     }
-    
     loadAgents();
   }, [navigate]);
 
@@ -46,7 +45,7 @@ const Admin = () => {
   const saveAgents = async (newAgents: Agent[]) => {
     setIsSaving(true);
     try {
-      await saveAgentsToGitHub(newAgents);
+      await saveAgentsToGitHub(newAgents); // chiama la funzione serverless
       setAgents(newAgents);
       return true;
     } catch (error) {
@@ -63,7 +62,7 @@ const Admin = () => {
 
   const handleAddAgent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newAgentName.trim() || !newAgentPassword.trim()) {
       toast({
         title: "Errore",
@@ -76,7 +75,7 @@ const Admin = () => {
     const existingAgent = agents.find(
       a => a.fullName.toLowerCase() === newAgentName.toLowerCase()
     );
-    
+
     if (existingAgent) {
       toast({
         title: "Errore",
@@ -93,7 +92,6 @@ const Admin = () => {
     };
 
     const success = await saveAgents([...agents, newAgent]);
-    
     if (success) {
       setNewAgentName("");
       setNewAgentPassword("");
@@ -107,7 +105,7 @@ const Admin = () => {
   const handleDeleteAgent = async (id: string) => {
     const updatedAgents = agents.filter(a => a.id !== id);
     const success = await saveAgents(updatedAgents);
-    
+
     if (success) {
       toast({
         title: "Agente eliminato",
