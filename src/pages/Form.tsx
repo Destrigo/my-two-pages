@@ -131,86 +131,94 @@ const Form = () => {
       const templateId = "template_usxk8pp";
       const publicKey = "Sh8iwu-lvTx6-nLOQ";
 
-      // Build espositori string
-      const espositoriList = Object.entries(espositori)
-        .filter(([_, item]) => item.enabled && item.pieces)
-        .map(([key, item]) => {
-          const names: Record<string, string> = {
-            skinimalism: "SKINIMALISM",
-            sensitive: "SENSITIVE",
-            sunPassion: "SUN PASSION",
-            careYouBody: "CAREyouBODY",
-          };
-          return `${names[key]}: ${item.pieces} pz`;
-        })
-        .join(", ");
+      // Build order summary function
+      const buildOrderSummary = (): string => {
+        const lines: string[] = [];
 
-      // Build campioni string
-      const campioniList = Object.entries(campioni)
-        .filter(([_, item]) => item.enabled && item.pieces)
-        .map(([key, item]) => {
-          const names: Record<string, string> = {
-            theHero: "THE HERO",
-            skinHeart: "SKIN HEART",
-            eyeRescue: "EYE RESCUE",
-            botoxLikeSerum: "BOTOX LIKE SERUM",
-            restoringCream: "RESTORING CREAM",
-            legsRelief: "LEGS RELIEF",
-          };
-          return `${names[key]}: ${item.pieces} pz`;
-        })
-        .join(", ");
+        // Cliente info
+        lines.push(`CLIENTE: ${formData.ragioneSociale}`);
+        lines.push(`NUOVO CLIENTE: ${formData.isNuovoCliente ? "Sì" : "No"}`);
+        lines.push("");
 
-      // Build products string
-      const productsList = Object.entries(products)
-        .filter(([_, item]) => item.enabled && item.quantity)
-        .map(([key, item]) => {
-          const product = PRODUCTS[key];
-          const discount = item.discount ? parseInt(item.discount) : 0;
-          const omaggio = item.omaggio || "0";
-          return `${product.name}: ${item.quantity} pz x €${product.price.toFixed(2)} (Sconto: ${discount}%, Omaggio: ${omaggio} pz)`;
-        })
-        .join("\n");
+        // Nuovo cliente details if applicable
+        if (formData.isNuovoCliente) {
+          lines.push("DATI NUOVO CLIENTE:");
+          lines.push(`Indirizzo: ${formData.indirizzo}, ${formData.cap} ${formData.localita} (${formData.provincia})`);
+          lines.push(`Codice Fiscale: ${formData.codiceFiscale}`);
+          if (formData.partitaIva) lines.push(`Partita IVA: ${formData.partitaIva}`);
+          lines.push(`Dati Bancari: ${formData.datiBancari}`);
+          lines.push(`Codice SDI: ${formData.codiceSdi}`);
+          if (formData.indirizzoSpedizione) lines.push(`Indirizzo Spedizione: ${formData.indirizzoSpedizione}`);
+          lines.push("");
+        }
 
-      // Build nuovo cliente info
-      let nuovoClienteInfo = "";
-      if (formData.isNuovoCliente) {
-        nuovoClienteInfo = `
-NUOVO CLIENTE - DATI:
-Indirizzo: ${formData.indirizzo}, ${formData.cap} ${formData.localita} (${formData.provincia})
-Codice Fiscale: ${formData.codiceFiscale}
-${formData.partitaIva ? `Partita IVA: ${formData.partitaIva}` : ""}
-Dati Bancari: ${formData.datiBancari}
-Codice SDI: ${formData.codiceSdi}
-${formData.indirizzoSpedizione ? `Indirizzo Spedizione: ${formData.indirizzoSpedizione}` : ""}
-        `.trim();
-      }
+        // Prodotti
+        lines.push("PRODOTTI:");
+        const selectedProducts = Object.entries(products).filter(([_, item]) => item.enabled && item.quantity);
+        if (selectedProducts.length > 0) {
+          selectedProducts.forEach(([key, item]) => {
+            const product = PRODUCTS[key];
+            const discount = item.discount ? parseInt(item.discount) : 0;
+            const omaggio = item.omaggio || "0";
+            lines.push(`- ${product.name}: ${item.quantity} pz x €${product.price.toFixed(2)} (Sconto: ${discount}%, Omaggio: ${omaggio} pz)`);
+          });
+        } else {
+          lines.push("Nessuno");
+        }
+        lines.push("");
 
-      const message = `
-NOME AGENTE: ${agentName}
-RAGIONE SOCIALE CLIENTE: ${formData.ragioneSociale}
-${formData.isNuovoCliente ? "NUOVO CLIENTE: Sì" : "NUOVO CLIENTE: No"}
+        // Espositori
+        lines.push("ESPOSITORI:");
+        const espositoriNames: Record<string, string> = {
+          skinimalism: "SKINIMALISM",
+          sensitive: "SENSITIVE",
+          sunPassion: "SUN PASSION",
+          careYouBody: "CAREyouBODY",
+        };
+        const selectedEspositori = Object.entries(espositori).filter(([_, item]) => item.enabled && item.pieces);
+        if (selectedEspositori.length > 0) {
+          selectedEspositori.forEach(([key, item]) => {
+            lines.push(`- ${espositoriNames[key]}: ${item.pieces} pz`);
+          });
+        } else {
+          lines.push("Nessuno");
+        }
+        lines.push("");
 
-${nuovoClienteInfo}
+        // Campioni
+        lines.push("CAMPIONI:");
+        const campioniNames: Record<string, string> = {
+          theHero: "THE HERO",
+          skinHeart: "SKIN HEART",
+          eyeRescue: "EYE RESCUE",
+          botoxLikeSerum: "BOTOX LIKE SERUM",
+          restoringCream: "RESTORING CREAM",
+          legsRelief: "LEGS RELIEF",
+        };
+        const selectedCampioni = Object.entries(campioni).filter(([_, item]) => item.enabled && item.pieces);
+        if (selectedCampioni.length > 0) {
+          selectedCampioni.forEach(([key, item]) => {
+            lines.push(`- ${campioniNames[key]}: ${item.pieces} pz`);
+          });
+        } else {
+          lines.push("Nessuno");
+        }
+        lines.push("");
 
-${
-  productsList
-    ? `INFORMAZIONI ORDINE:
-${productsList}`
-    : ""
-}
+        // Note
+        lines.push("NOTE:");
+        lines.push(formData.note || "Nessuna");
 
-${espositoriList ? `ESPOSITORI: ${espositoriList}` : ""}
-${campioniList ? `CAMPIONI: ${campioniList}` : ""}
+        return lines.join("\n");
+      };
 
-${formData.note ? `NOTE: ${formData.note}` : ""}
-      `.trim();
+      const orderSummary = buildOrderSummary();
 
       const templateParams = {
         to_email: "ordini@newcossrl.it",
         from_name: agentName,
         category: formData.isNuovoCliente ? "Nuovo Cliente" : "Cliente Esistente",
-        message: message,
+        message: orderSummary,
       };
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
@@ -250,7 +258,6 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
         legsRelief: { enabled: false, pieces: "" },
       });
       setProducts({
-        prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
         prodotto1: { enabled: false, quantity: "", discount: "", omaggio: "" },
         prodotto2: { enabled: false, quantity: "", discount: "", omaggio: "" },
         prodotto3: { enabled: false, quantity: "", discount: "", omaggio: "" },
