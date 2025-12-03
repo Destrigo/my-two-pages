@@ -5,43 +5,50 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-
-interface Agent {
-  id: string;
-  fullName: string;
-  password: string;
-}
+import { Loader2 } from "lucide-react";
+import { getAgents, Agent } from "@/lib/githubApi";
 
 const Login = () => {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    const storedAgents = localStorage.getItem("agents");
-    const agents: Agent[] = storedAgents ? JSON.parse(storedAgents) : [];
-    
-    const agent = agents.find(
-      a => a.fullName.toLowerCase() === fullName.toLowerCase() && a.password === password
-    );
-    
-    if (agent) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("agentName", agent.fullName);
-      toast({
-        title: "Accesso effettuato",
-        description: `Bentornato, ${agent.fullName}!`,
-      });
-      navigate("/form");
-    } else {
+    try {
+      const agents: Agent[] = await getAgents();
+      
+      const agent = agents.find(
+        a => a.fullName.toLowerCase() === fullName.toLowerCase() && a.password === password
+      );
+      
+      if (agent) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("agentName", agent.fullName);
+        toast({
+          title: "Accesso effettuato",
+          description: `Bentornato, ${agent.fullName}!`,
+        });
+        navigate("/form");
+      } else {
+        toast({
+          title: "Errore",
+          description: "Nome o password non validi",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Errore",
-        description: "Nome o password non validi",
+        description: "Impossibile verificare le credenziali",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,6 +80,7 @@ const Login = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  disabled={isLoading}
                   className="font-cormorant"
                 />
               </div>
@@ -85,11 +93,19 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                   className="font-cormorant"
                 />
               </div>
-              <Button type="submit" className="w-full font-cormorant text-base">
-                Accedi
+              <Button type="submit" className="w-full font-cormorant text-base" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifica...
+                  </>
+                ) : (
+                  "Accedi"
+                )}
               </Button>
             </form>
             <div className="mt-4 text-center">
