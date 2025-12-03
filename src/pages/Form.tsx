@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import emailjs from '@emailjs/browser';
+import emailjs from "@emailjs/browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,15 +33,15 @@ interface ProductInfo {
 }
 
 const PRODUCTS: Record<string, ProductInfo> = {
-  prodotto1: { name: "Crema Viso Idratante", price: 45.00 },
-  prodotto2: { name: "Siero Anti-Age", price: 68.00 },
+  prodotto1: { name: "Crema Viso Idratante", price: 45.0 },
+  prodotto2: { name: "Siero Anti-Age", price: 68.0 },
 };
 
 const Form = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [agentName, setAgentName] = useState("");
-  
+
   const [formData, setFormData] = useState({
     ragioneSociale: "",
     isNuovoCliente: false,
@@ -83,12 +83,12 @@ const Form = () => {
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     const storedAgentName = localStorage.getItem("agentName");
-    
+
     if (!isAuthenticated) {
       navigate("/");
       return;
     }
-    
+
     if (storedAgentName) {
       setAgentName(storedAgentName);
     }
@@ -96,7 +96,7 @@ const Form = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.ragioneSociale.trim()) {
       toast({
         title: "Errore",
@@ -105,12 +105,12 @@ const Form = () => {
       });
       return;
     }
-    
+
     try {
-      const serviceId = 'service_42azew6';
-      const templateId = 'template_usxk8pp';
-      const publicKey = 'Sh8iwu-lvTx6-nLOQ';
-      
+      const serviceId = "service_42azew6";
+      const templateId = "template_usxk8pp";
+      const publicKey = "Sh8iwu-lvTx6-nLOQ";
+
       // Build espositori string
       const espositoriList = Object.entries(espositori)
         .filter(([_, item]) => item.enabled && item.pieces)
@@ -173,29 +173,33 @@ ${formData.isNuovoCliente ? "NUOVO CLIENTE: Sì" : "NUOVO CLIENTE: No"}
 
 ${nuovoClienteInfo}
 
-${productsList ? `INFORMAZIONI ORDINE:
-${productsList}` : ""}
+${
+  productsList
+    ? `INFORMAZIONI ORDINE:
+${productsList}`
+    : ""
+}
 
 ${espositoriList ? `ESPOSITORI: ${espositoriList}` : ""}
 ${campioniList ? `CAMPIONI: ${campioniList}` : ""}
 
 ${formData.note ? `NOTE: ${formData.note}` : ""}
       `.trim();
-      
+
       const templateParams = {
-        to_email: 'ordini@newcossrl.it',
+        to_email: "ordini@newcossrl.it",
         from_name: agentName,
         category: formData.isNuovoCliente ? "Nuovo Cliente" : "Cliente Esistente",
         message: message,
       };
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      
+
       toast({
         title: "Modulo inviato con successo",
         description: "Il tuo modulo è stato inviato via email.",
       });
-      
+
       // Reset form
       setFormData({
         ragioneSociale: "",
@@ -230,7 +234,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
         prodotto2: { enabled: false, quantity: "", discount: "", omaggio: "" },
       });
     } catch (error) {
-      console.error('EmailJS Error:', error);
+      console.error("EmailJS Error:", error);
       toast({
         title: "Errore",
         description: "Invio fallito. Riprova.",
@@ -246,34 +250,34 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
   };
 
   const toggleEspositore = (key: string) => {
-    setEspositori(prev => ({
+    setEspositori((prev) => ({
       ...prev,
-      [key]: { ...prev[key], enabled: !prev[key].enabled, pieces: !prev[key].enabled ? prev[key].pieces : "" }
+      [key]: { ...prev[key], enabled: !prev[key].enabled, pieces: !prev[key].enabled ? prev[key].pieces : "" },
     }));
   };
 
   const toggleCampione = (key: string) => {
-    setCampioni(prev => ({
+    setCampioni((prev) => ({
       ...prev,
-      [key]: { ...prev[key], enabled: !prev[key].enabled, pieces: !prev[key].enabled ? prev[key].pieces : "" }
+      [key]: { ...prev[key], enabled: !prev[key].enabled, pieces: !prev[key].enabled ? prev[key].pieces : "" },
     }));
   };
 
   const toggleProduct = (key: string) => {
-    setProducts(prev => ({
+    setProducts((prev) => ({
       ...prev,
-      [key]: { 
-        ...prev[key], 
-        enabled: !prev[key].enabled, 
+      [key]: {
+        ...prev[key],
+        enabled: !prev[key].enabled,
         quantity: !prev[key].enabled ? prev[key].quantity : "",
         discount: !prev[key].enabled ? prev[key].discount : "",
-        omaggio: !prev[key].enabled ? prev[key].omaggio : ""
-      }
+        omaggio: !prev[key].enabled ? prev[key].omaggio : "",
+      },
     }));
   };
 
   const espositoreLabels: Record<string, string> = {
-    skinimalis: "SKINIMALIS",
+    skinimalism: "SKINIMALISM",
     sensitive: "SENSITIVE",
     sunPassion: "SUN PASSION",
     careYouBody: "CAREyouBODY",
@@ -300,7 +304,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
             Esci
           </Button>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="font-cormorant">Informazioni Ordine</CardTitle>
@@ -310,14 +314,10 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Nome Agente - Read Only */}
               <div className="space-y-2">
-                <Label htmlFor="nomeAgente" className="font-cormorant font-semibold">NOME AGENTE</Label>
-                <Input
-                  id="nomeAgente"
-                  value={agentName}
-                  readOnly
-                  disabled
-                  className="font-cormorant bg-muted"
-                />
+                <Label htmlFor="nomeAgente" className="font-cormorant font-semibold">
+                  NOME AGENTE
+                </Label>
+                <Input id="nomeAgente" value={agentName} readOnly disabled className="font-cormorant bg-muted" />
               </div>
 
               {/* Ragione Sociale Cliente */}
@@ -353,7 +353,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
               {formData.isNuovoCliente && (
                 <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
                   <p className="font-cormorant text-sm text-muted-foreground">Dati del nuovo cliente</p>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2 space-y-2">
                       <Label className="font-cormorant">Indirizzo (Via)</Label>
@@ -457,9 +457,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                         <Label htmlFor={`prod-${key}`} className="font-cormorant cursor-pointer flex-1">
                           {product.name}
                         </Label>
-                        <span className="font-cormorant font-semibold text-primary">
-                          €{product.price.toFixed(2)}
-                        </span>
+                        <span className="font-cormorant font-semibold text-primary">€{product.price.toFixed(2)}</span>
                       </div>
                       {products[key].enabled && (
                         <div className="grid grid-cols-3 gap-3 mt-3">
@@ -469,10 +467,12 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                               type="number"
                               placeholder="0"
                               value={products[key].quantity}
-                              onChange={(e) => setProducts(prev => ({
-                                ...prev,
-                                [key]: { ...prev[key], quantity: e.target.value }
-                              }))}
+                              onChange={(e) =>
+                                setProducts((prev) => ({
+                                  ...prev,
+                                  [key]: { ...prev[key], quantity: e.target.value },
+                                }))
+                              }
                               className="font-cormorant"
                               min="1"
                             />
@@ -485,9 +485,9 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                               value={products[key].discount}
                               onChange={(e) => {
                                 const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                                setProducts(prev => ({
+                                setProducts((prev) => ({
                                   ...prev,
-                                  [key]: { ...prev[key], discount: e.target.value === "" ? "" : val.toString() }
+                                  [key]: { ...prev[key], discount: e.target.value === "" ? "" : val.toString() },
                                 }));
                               }}
                               className="font-cormorant"
@@ -501,10 +501,12 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                               type="number"
                               placeholder="0"
                               value={products[key].omaggio}
-                              onChange={(e) => setProducts(prev => ({
-                                ...prev,
-                                [key]: { ...prev[key], omaggio: e.target.value }
-                              }))}
+                              onChange={(e) =>
+                                setProducts((prev) => ({
+                                  ...prev,
+                                  [key]: { ...prev[key], omaggio: e.target.value },
+                                }))
+                              }
                               className="font-cormorant"
                               min="0"
                             />
@@ -537,10 +539,12 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                           type="number"
                           placeholder="Pezzi"
                           value={espositori[key].pieces}
-                          onChange={(e) => setEspositori(prev => ({
-                            ...prev,
-                            [key]: { ...prev[key], pieces: e.target.value }
-                          }))}
+                          onChange={(e) =>
+                            setEspositori((prev) => ({
+                              ...prev,
+                              [key]: { ...prev[key], pieces: e.target.value },
+                            }))
+                          }
                           className="font-cormorant w-24"
                           min="1"
                         />
@@ -571,10 +575,12 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
                           type="number"
                           placeholder="Pezzi"
                           value={campioni[key].pieces}
-                          onChange={(e) => setCampioni(prev => ({
-                            ...prev,
-                            [key]: { ...prev[key], pieces: e.target.value }
-                          }))}
+                          onChange={(e) =>
+                            setCampioni((prev) => ({
+                              ...prev,
+                              [key]: { ...prev[key], pieces: e.target.value },
+                            }))
+                          }
                           className="font-cormorant w-24"
                           min="1"
                         />
@@ -588,7 +594,9 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
 
               {/* Note */}
               <div className="space-y-2">
-                <Label htmlFor="note" className="font-cormorant font-semibold">NOTE</Label>
+                <Label htmlFor="note" className="font-cormorant font-semibold">
+                  NOTE
+                </Label>
                 <Textarea
                   id="note"
                   placeholder="Note aggiuntive (facoltativo)..."
