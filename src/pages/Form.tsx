@@ -277,7 +277,7 @@ ${formData.note ? `NOTE: ${formData.note}` : ""}
   };
 
   const espositoreLabels: Record<string, string> = {
-    skinimalism: "SKINIMALISM",
+    skinimalis: "SKINIMALIS",
     sensitive: "SENSITIVE",
     sunPassion: "SUN PASSION",
     careYouBody: "CAREyouBODY",
