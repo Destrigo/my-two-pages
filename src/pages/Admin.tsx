@@ -6,17 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, UserPlus, Loader2 } from "lucide-react";
-import { getAgents, saveAgents as saveAgentsToGitHub, Agent } from "@/lib/githubApi";
+import { getAgents, saveAgents as saveAgentsAPI, Agent } from "@/lib/githubApi";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [agents, setAgents] = useState<Agent[]>([]);
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentPassword, setNewAgentPassword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Controllo admin e caricamento agenti
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
     if (!isAdmin) {
@@ -34,7 +36,7 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: "Errore",
-        description: "Impossibile caricare gli agenti da GitHub",
+        description: "Impossibile caricare gli agenti",
         variant: "destructive",
       });
     } finally {
@@ -45,13 +47,13 @@ const Admin = () => {
   const saveAgents = async (newAgents: Agent[]) => {
     setIsSaving(true);
     try {
-      await saveAgentsToGitHub(newAgents); // chiama la funzione serverless
+      await saveAgentsAPI(newAgents);
       setAgents(newAgents);
       return true;
     } catch (error) {
       toast({
         title: "Errore",
-        description: "Impossibile salvare gli agenti su GitHub",
+        description: "Impossibile salvare gli agenti",
         variant: "destructive",
       });
       return false;
@@ -72,14 +74,11 @@ const Admin = () => {
       return;
     }
 
-    const existingAgent = agents.find(
-      a => a.fullName.toLowerCase() === newAgentName.toLowerCase()
-    );
-
-    if (existingAgent) {
+    const exists = agents.some(a => a.fullName.toLowerCase() === newAgentName.toLowerCase());
+    if (exists) {
       toast({
         title: "Errore",
-        description: "Esiste già un agente con questo nome",
+        description: "Agente già esistente",
         variant: "destructive",
       });
       return;
@@ -97,19 +96,18 @@ const Admin = () => {
       setNewAgentPassword("");
       toast({
         title: "Agente creato",
-        description: `${newAgent.fullName} è stato aggiunto`,
+        description: `${newAgent.fullName} aggiunto con successo`,
       });
     }
   };
 
   const handleDeleteAgent = async (id: string) => {
-    const updatedAgents = agents.filter(a => a.id !== id);
-    const success = await saveAgents(updatedAgents);
-
+    const updated = agents.filter(a => a.id !== id);
+    const success = await saveAgents(updated);
     if (success) {
       toast({
         title: "Agente eliminato",
-        description: "L'agente è stato rimosso",
+        description: "Agente rimosso con successo",
       });
     }
   };
@@ -131,7 +129,8 @@ const Admin = () => {
             Esci
           </Button>
         </div>
-        
+
+        {/* CREA NUOVO AGENTE */}
         <Card>
           <CardHeader>
             <CardTitle className="font-cormorant flex items-center gap-2">
@@ -151,8 +150,8 @@ const Admin = () => {
                   placeholder="Mario Rossi"
                   value={newAgentName}
                   onChange={(e) => setNewAgentName(e.target.value)}
-                  className="font-cormorant"
                   disabled={isSaving}
+                  className="font-cormorant"
                 />
               </div>
               <div className="space-y-2">
@@ -163,8 +162,8 @@ const Admin = () => {
                   placeholder="••••••••"
                   value={newAgentPassword}
                   onChange={(e) => setNewAgentPassword(e.target.value)}
-                  className="font-cormorant"
                   disabled={isSaving}
+                  className="font-cormorant"
                 />
               </div>
               <Button type="submit" className="w-full font-cormorant" disabled={isSaving}>
@@ -181,6 +180,7 @@ const Admin = () => {
           </CardContent>
         </Card>
 
+        {/* LISTA AGENTI */}
         <Card>
           <CardHeader>
             <CardTitle className="font-cormorant">Agenti Registrati</CardTitle>
@@ -195,24 +195,17 @@ const Admin = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {agents.map((agent) => (
-                  <div
-                    key={agent.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-card"
-                  >
+                {agents.map(agent => (
+                  <div key={agent.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
                     <span className="font-cormorant font-medium">{agent.fullName}</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteAgent(agent.id)}
-                      className="text-destructive hover:text-destructive"
                       disabled={isSaving}
+                      className="text-destructive hover:text-destructive"
                     >
-                      {isSaving ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </Button>
                   </div>
                 ))}
