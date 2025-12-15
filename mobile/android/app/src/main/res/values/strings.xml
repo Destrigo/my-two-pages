@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">heBe Form</string>
+    <string name="title_activity_main">heBe Form</string>
+    <string name="package_name">com.marcotarantino.HeBeForm</string>
+    <string name="custom_url_scheme">com.marcotarantino.HeBeForm</string>
+</resources>
