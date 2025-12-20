@@ -1,57 +1,96 @@
-import { Handler } from "@netlify/functions";
-import fetch from "node-fetch";
+import type { Handler } from "@netlify/functions";
 
 const handler: Handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
-
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPO;
-  const username = process.env.GITHUB_USERNAME;
-
-  if (!token || !repo || !username) {
-    return { statusCode: 500, body: "Missing GitHub credentials" };
-  }
-
-  const { agents } = JSON.parse(event.body || "{}");
-
   try {
-    const filePath = "agents.json"; // file nel repo
-    const branch = "main";
+    if (event.httpMethod !== "POST") {
+      return { statusCode: 405, body: "Method Not Allowed" };
+    }
 
-    // Prendi SHA del file se esiste (necessario per aggiornamento)
-    const res = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${filePath}`, {
-      headers: { Authorization: `token ${token}` },
+    if (!event.body) {
+      return { statusCode: 400, body: "Missing request body" };
+    }
+
+    const token = process.env.GITHUB_TOKEN;
+    const repo = process.env.GITHUB_REPO;
+    const username = process.env.GITHUB_USERNAME;
+
+    if (!token || !repo || !username) {
+      return { statusCode: 500, body: "Missing GitHub credentials" };
+    }
+
+    const { agents } = JSON.parse(event.body);
+    if (!agents) {
+      return { statusCode: 400, body: "Missing agents payload" };
+    }
+
+    const filePath = "agents.json";
+    const branch = "main";
+    const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${filePath}`;
+
+    // Fetch existing file to get SHA (if it exists)
+    let sha: string | undefined;
+
+    const getRes = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+      },
     });
 
-    const data = await res.json();
-    let sha;
-    if (res.status === 200) sha = data.sha;
+    if (getRes.ok) {
+      const data = await getRes.json();
+      sha = data.sha;
+    } else if (getRes.status !== 404) {
+      return {
+        statusCode: 500,
+        body: "Failed to fetch existing file from GitHub",
+      };
+    }
 
-    // Aggiorna il file su GitHub
-    const updateRes = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${filePath}`, {
+    // Encode content
+    const content = Buffer.from(
+      JSON.stringify(agents, null, 2),
+      "utf8"
+    ).toString("base64");
+
+    const putBody: any = {
+      message: "Aggiornamento agents.json",
+      content,
+      branch,
+    };
+
+    if (sha) {
+      putBody.sha = sha;
+    }
+
+    const updateRes = await fetch(apiUrl, {
       method: "PUT",
       headers: {
-        Authorization: `token ${token}`,
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        message: "Aggiornamento agents.json",
-        content: Buffer.from(JSON.stringify(agents, null, 2)).toString("base64"),
-        sha: sha || undefined,
-        branch,
-      }),
+      body: JSON.stringify(putBody),
     });
 
     if (!updateRes.ok) {
       const errText = await updateRes.text();
-      return { statusCode: 500, body: `GitHub error: ${errText}` };
+      return {
+        statusCode: 500,
+        body: `GitHub error: ${errText}`,
+      };
     }
 
-    return { statusCode: 200, body: JSON.stringify({ message: "Agents salvati" }) };
-  } catch (err) {
-    return { statusCode: 500, body: `Server error: ${err}` };
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Agents salvati" }),
+    };
+  } catch (err: any) {
+    return {
+      statusCode: 500,
+      body: `Server error: ${err.message ?? err}`,
+    };
   }
 };
 
