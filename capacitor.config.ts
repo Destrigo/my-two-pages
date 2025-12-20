@@ -1,12 +1,25 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.694b7522459646cabb56a52aa6e2dbc9',
-  appName: 'A Lovable project',
+  appId: 'it.hebe.orderform',
+  appName: 'HeBe Order',
   webDir: 'dist',
   server: {
-    url: 'https://694b7522-4596-46ca-bb56-a52aa6e2dbc9.lovableproject.com?forceHideBadge=true',
-    cleartext: true
+    androidScheme: 'https',
+    iosScheme: 'https'
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#F5E6E8',
+      androidSplashResourceName: 'splash',
+      iosSpinnerStyle: 'small',
+      showSpinner: false
+    },
+    StatusBar: {
+      style: 'light',
+      backgroundColor: '#F5E6E8'
+    }
   }
 };
 
