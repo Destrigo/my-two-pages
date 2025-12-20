@@ -1,42 +1,30 @@
 import type { Handler } from "@netlify/functions";
 
-const username = process.env.GITHUB_USERNAME!;
-const repo = process.env.GITHUB_REPO!;
-const token = process.env.GITHUB_TOKEN!;
-
-const API_URL = `https://api.github.com/repos/${username}/${repo}/contents/agents.json`;
+const RAW_URL =
+  "https://raw.githubusercontent.com/Destrigo/my-two-pages/main/agents.json";
 
 export const handler: Handler = async () => {
   try {
-    const res = await fetch(API_URL, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-      },
-    });
-
-    if (res.status === 404) {
-      return { statusCode: 200, body: JSON.stringify([]) };
-    }
+    const res = await fetch(RAW_URL);
 
     if (!res.ok) {
-      throw new Error(`GitHub error: ${res.status}`);
+      return {
+        statusCode: res.status,
+        body: "Failed to fetch agents.json",
+      };
     }
 
-    const data = await res.json();
-
-    const content = Buffer.from(data.content, "base64").toString("utf8");
-    const agents = JSON.parse(content);
+    const agents = await res.json();
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(agents),
     };
-  } catch (error: any) {
+  } catch (err: any) {
     return {
       statusCode: 500,
-      body: error.message,
+      body: err.message,
     };
   }
 };
