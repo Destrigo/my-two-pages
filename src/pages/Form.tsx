@@ -47,6 +47,16 @@ const PRODUCTS: Record<string, ProductInfo> = {
   prodotto12: { name: "Balance Myst", price: 16.0 },
 };
 
+// Import product images dynamically
+const getProductImage = (productKey: string): string | null => {
+  try {
+    // Try to import the image - Vite will handle this at build time
+    return new URL(`../photo_products/${productKey}.jpg`, import.meta.url).href;
+  } catch {
+    return null;
+  }
+};
+
 const Form = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -55,7 +65,6 @@ const Form = () => {
   const [formData, setFormData] = useState({
     ragioneSociale: "",
     isNuovoCliente: false,
-    // Nuovo cliente fields
     indirizzo: "",
     cap: "",
     localita: "",
@@ -65,7 +74,6 @@ const Form = () => {
     datiBancari: "",
     codiceSdi: "",
     indirizzoSpedizione: "",
-    // Note
     note: "",
   });
 
@@ -131,16 +139,13 @@ const Form = () => {
       const templateId = "template_usxk8pp";
       const publicKey = "Sh8iwu-lvTx6-nLOQ";
 
-      // Build order summary function
       const buildOrderSummary = (): string => {
         const lines: string[] = [];
 
-        // Cliente info
         lines.push(`CLIENTE: ${formData.ragioneSociale}`);
         lines.push(`NUOVO CLIENTE: ${formData.isNuovoCliente ? "Sì" : "No"}`);
         lines.push("");
 
-        // Nuovo cliente details if applicable
         if (formData.isNuovoCliente) {
           lines.push("DATI NUOVO CLIENTE:");
           lines.push(`Indirizzo: ${formData.indirizzo}, ${formData.cap} ${formData.localita} (${formData.provincia})`);
@@ -152,7 +157,6 @@ const Form = () => {
           lines.push("");
         }
 
-        // Prodotti
         lines.push("PRODOTTI:");
         const selectedProducts = Object.entries(products).filter(([_, item]) => item.enabled && item.quantity);
         if (selectedProducts.length > 0) {
@@ -167,7 +171,6 @@ const Form = () => {
         }
         lines.push("");
 
-        // Espositori
         lines.push("ESPOSITORI:");
         const espositoriNames: Record<string, string> = {
           skinimalism: "SKINIMALISM",
@@ -185,7 +188,6 @@ const Form = () => {
         }
         lines.push("");
 
-        // Campioni
         lines.push("CAMPIONI:");
         const campioniNames: Record<string, string> = {
           theHero: "THE HERO",
@@ -205,7 +207,6 @@ const Form = () => {
         }
         lines.push("");
 
-        // Note
         lines.push("NOTE:");
         lines.push(formData.note || "Nessuna");
 
@@ -484,75 +485,99 @@ const Form = () => {
               <div className="space-y-4">
                 <Label className="font-cormorant font-semibold text-lg">INFORMAZIONI RIFERITE ALL'ORDINE</Label>
                 <div className="space-y-4">
-                  {Object.entries(PRODUCTS).map(([key, product]) => (
-                    <div key={key} className="p-3 rounded-lg border bg-muted/20">
-                      <div className="flex items-center gap-4 mb-2">
-                        <Checkbox
-                          id={`prod-${key}`}
-                          checked={products[key].enabled}
-                          onCheckedChange={() => toggleProduct(key)}
-                        />
-                        <Label htmlFor={`prod-${key}`} className="font-cormorant cursor-pointer flex-1">
-                          {product.name}
-                        </Label>
-                        <span className="font-cormorant font-semibold text-primary">€{product.price.toFixed(2)}</span>
-                      </div>
-                      {products[key].enabled && (
-                        <div className="grid grid-cols-3 gap-3 mt-3">
-                          <div className="space-y-1">
-                            <Label className="font-cormorant text-xs">Quantità (pz)</Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              value={products[key].quantity}
-                              onChange={(e) =>
-                                setProducts((prev) => ({
-                                  ...prev,
-                                  [key]: { ...prev[key], quantity: e.target.value },
-                                }))
-                              }
-                              className="font-cormorant"
-                              min="1"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="font-cormorant text-xs">Sconto (%)</Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              value={products[key].discount}
-                              onChange={(e) => {
-                                const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                                setProducts((prev) => ({
-                                  ...prev,
-                                  [key]: { ...prev[key], discount: e.target.value === "" ? "" : val.toString() },
-                                }));
+                  {Object.entries(PRODUCTS).map(([key, product]) => {
+                    const imageUrl = getProductImage(key);
+                    
+                    return (
+                      <div key={key} className="p-3 rounded-lg border bg-muted/20">
+                        <div className="flex items-start gap-4 mb-2">
+                          <Checkbox
+                            id={`prod-${key}`}
+                            checked={products[key].enabled}
+                            onCheckedChange={() => toggleProduct(key)}
+                            className="mt-1"
+                          />
+                          
+                          {/* Product Image */}
+                          {imageUrl && (
+                            <img 
+                              src={imageUrl} 
+                              alt={product.name}
+                              className="w-16 h-16 object-cover rounded-md border"
+                              onError={(e) => {
+                                // Hide image if it fails to load
+                                (e.target as HTMLImageElement).style.display = 'none';
                               }}
-                              className="font-cormorant"
-                              min="0"
-                              max="100"
                             />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="font-cormorant text-xs">Omaggio (pz)</Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              value={products[key].omaggio}
-                              onChange={(e) =>
-                                setProducts((prev) => ({
-                                  ...prev,
-                                  [key]: { ...prev[key], omaggio: e.target.value },
-                                }))
-                              }
-                              className="font-cormorant"
-                              min="0"
-                            />
+                          )}
+                          
+                          <div className="flex-1">
+                            <Label htmlFor={`prod-${key}`} className="font-cormorant cursor-pointer block font-medium">
+                              {product.name}
+                            </Label>
+                            <span className="font-cormorant text-sm text-primary font-semibold">
+                              €{product.price.toFixed(2)}
+                            </span>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        
+                        {products[key].enabled && (
+                          <div className="grid grid-cols-3 gap-3 mt-3 pl-20">
+                            <div className="space-y-1">
+                              <Label className="font-cormorant text-xs">Quantità (pz)</Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                value={products[key].quantity}
+                                onChange={(e) =>
+                                  setProducts((prev) => ({
+                                    ...prev,
+                                    [key]: { ...prev[key], quantity: e.target.value },
+                                  }))
+                                }
+                                className="font-cormorant"
+                                min="1"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="font-cormorant text-xs">Sconto (%)</Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                value={products[key].discount}
+                                onChange={(e) => {
+                                  const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                  setProducts((prev) => ({
+                                    ...prev,
+                                    [key]: { ...prev[key], discount: e.target.value === "" ? "" : val.toString() },
+                                  }));
+                                }}
+                                className="font-cormorant"
+                                min="0"
+                                max="100"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="font-cormorant text-xs">Omaggio (pz)</Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                value={products[key].omaggio}
+                                onChange={(e) =>
+                                  setProducts((prev) => ({
+                                    ...prev,
+                                    [key]: { ...prev[key], omaggio: e.target.value },
+                                  }))
+                                }
+                                className="font-cormorant"
+                                min="0"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
